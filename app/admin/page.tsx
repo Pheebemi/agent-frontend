@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, User } from "lucide-react";
+import { AlertTriangle, User, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { ProgressSummary } from "@/components/progress-summary";
 import { useDashboard } from "@/lib/use-dashboard";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { api, type Lga, type Agent } from "@/lib/api";
+
+const PAGE_SIZE = 50; // matches REST_FRAMEWORK PAGE_SIZE
 
 export default function Admin() {
   const router = useRouter();
@@ -26,24 +29,28 @@ export default function Admin() {
   const [reviewOnly, setReviewOnly] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [count, setCount] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { api.lgas().then(setLgas).catch(() => {}); }, []);
 
-  const load = async () => {
+  // Any filter change invalidates the current page — otherwise you can land
+  // on page 4 of a one-page result and see nothing.
+  useEffect(() => { setPage(1); }, [lgaId, source, reviewOnly]);
+
+  useEffect(() => {
     setLoading(true);
-    try {
-      const params: Record<string, string> = {};
-      if (lgaId) params.lga = lgaId;
-      if (source) params.source = source;
-      if (reviewOnly) params.needs_review = "1";
-      const res = await api.adminAgents(params);
-      const list = Array.isArray(res) ? res : res.results;
-      setAgents(list);
-      setCount(Array.isArray(res) ? res.length : res.count);
-    } catch { /* ignore */ } finally { setLoading(false); }
-  };
-  useEffect(() => { load(); }, [lgaId, source, reviewOnly]);
+    const params: Record<string, string> = { page: String(page) };
+    if (lgaId) params.lga = lgaId;
+    if (source) params.source = source;
+    if (reviewOnly) params.needs_review = "1";
+    api.searchAgents(params)
+      .then((r) => { setAgents(r.results); setCount(r.count); })
+      .catch(() => { setAgents([]); setCount(0); })
+      .finally(() => setLoading(false));
+  }, [lgaId, source, reviewOnly, page]);
+
+  const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
 
   return (
     <DashboardShell
@@ -125,6 +132,35 @@ export default function Admin() {
             </tbody>
           </table>
         </div>
+
+        {/* ---------------- Pagination ---------------- */}
+        {totalPages > 1 && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="md-label-medium text-md-on-surface-variant tabular-nums">
+              Showing {((page - 1) * PAGE_SIZE + 1).toLocaleString()}–
+              {Math.min(page * PAGE_SIZE, count).toLocaleString()} of {count.toLocaleString()}
+            </span>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outlined" size="sm"
+                disabled={page <= 1 || loading}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft className="size-4" /> Previous
+              </Button>
+              <span className="md-label-large text-md-on-surface-variant tabular-nums">
+                {page} / {totalPages}
+              </span>
+              <Button
+                variant="outlined" size="sm"
+                disabled={page >= totalPages || loading}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Next <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardShell>
   );
