@@ -17,9 +17,14 @@ export type Paginated<T> = {
   count: number; next: string | null; previous: string | null; results: T[];
 };
 export type PortalUser = {
-  id: number; username: string; full_name: string; email: string;
+  id: number; username: string; first_name: string; last_name: string;
+  full_name: string; email: string;
   role: "admin" | "collector"; is_active: boolean;
   date_joined: string; last_login: string | null; agents_captured: number;
+};
+export type NewUser = {
+  username: string; password?: string; first_name?: string; last_name?: string;
+  email?: string; role?: "admin" | "collector";
 };
 export type ReviewRow = {
   row: number; full_name: string; phone_number: string;
@@ -123,6 +128,15 @@ class ApiClient {
   users(params: Record<string, string> = {}) {
     const q = new URLSearchParams(params).toString();
     return this.req<PortalUser[]>(`/users/${q ? `?${q}` : ""}`);
+  }
+  createUser(data: NewUser) {
+    return this.req<PortalUser>("/users/", { method: "POST", body: JSON.stringify(data) });
+  }
+  updateUser(id: number, data: Partial<NewUser> & { is_active?: boolean }) {
+    return this.req<PortalUser>(`/users/${id}/`, { method: "PATCH", body: JSON.stringify(data) });
+  }
+  deleteUser(id: number) {
+    return this.req<void>(`/users/${id}/`, { method: "DELETE" });
   }
   userSummary() {
     return this.req<{ total: number; admins: number; collectors: number; active: number }>(

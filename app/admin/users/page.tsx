@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserCog, ShieldCheck, Users as UsersIcon, CircleCheck } from "lucide-react";
+import {
+  UserCog, ShieldCheck, Users as UsersIcon, CircleCheck, UserPlus, Pencil, Power,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { UserFormDialog } from "@/components/user-form-dialog";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { api, type PortalUser } from "@/lib/api";
 
@@ -17,6 +21,20 @@ export default function AdminUsers() {
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<PortalUser | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => setReloadKey((k) => k + 1);
+
+  const toggleActive = async (u: PortalUser) => {
+    setError("");
+    try {
+      await api.updateUser(u.id, { is_active: !u.is_active });
+      reload();
+    } catch (e: any) {
+      setError(e?.message || "Could not update that account");
+    }
+  };
 
   // Collectors have no business here; the API refuses them anyway.
   useEffect(() => {
@@ -35,7 +53,7 @@ export default function AdminUsers() {
       .then(([u, s]) => { setUsers(u); setSummary(s); })
       .catch((e) => setError(e?.message || "Could not load users"))
       .finally(() => setLoading(false));
-  }, [isAdmin, role]);
+  }, [isAdmin, role, reloadKey]);
 
   if (!isAdmin) {
     return (
@@ -51,11 +69,27 @@ export default function AdminUsers() {
     <DashboardShell
       title="Users"
       actions={
-        <span className="md-label-large text-md-on-surface-variant tabular-nums">
-          {loading ? "Loading…" : `${users.length} shown`}
-        </span>
+        <>
+          <span className="md-label-large text-md-on-surface-variant tabular-nums">
+            {loading ? "Loading…" : `${users.length} shown`}
+          </span>
+          <Button
+            variant="filled"
+            size="sm"
+            onClick={() => { setEditing(null); setDialogOpen(true); }}
+          >
+            <UserPlus className="size-4" /> Add user
+          </Button>
+        </>
       }
     >
+      <UserFormDialog
+        open={dialogOpen}
+        user={editing}
+        onClose={() => setDialogOpen(false)}
+        onSaved={reload}
+      />
+
       {/* ---------------- Summary ---------------- */}
       {summary && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -84,15 +118,15 @@ export default function AdminUsers() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-md-surface-variant text-left">
-              {["User", "Role", "Agents captured", "Status", "Last sign-in"].map((h) => (
-                <th key={h} className="md-label-medium p-4 font-medium text-md-on-surface-variant">{h}</th>
+              {["User", "Role", "Agents captured", "Status", "Last sign-in", ""].map((h, i) => (
+                <th key={i} className="md-label-medium p-4 font-medium text-md-on-surface-variant">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {users.length === 0 ? (
               <tr>
-                <td colSpan={5} className="md-body-medium p-10 text-center text-md-on-surface-variant">
+                <td colSpan={6} className="md-body-medium p-10 text-center text-md-on-surface-variant">
                   {loading ? "Loading…" : "No users match."}
                 </td>
               </tr>
@@ -131,6 +165,28 @@ export default function AdminUsers() {
                 <td className="md-body-medium p-4 text-md-on-surface-variant">
                   {u.last_login ? new Date(u.last_login).toLocaleDateString() : "Never"}
                 </td>
+                <td className="p-4">
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      variant="text" size="icon-sm"
+                      onClick={() => { setEditing(u); setDialogOpen(true); }}
+                      aria-label={`Edit ${u.username}`}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                    <Button
+                      variant="text" size="icon-sm"
+                      disabled={u.id === user?.id}
+                      title={u.id === user?.id
+                        ? "You cannot deactivate your own account"
+                        : u.is_active ? "Deactivate" : "Reactivate"}
+                      onClick={() => toggleActive(u)}
+                      aria-label={`${u.is_active ? "Deactivate" : "Reactivate"} ${u.username}`}
+                    >
+                      <Power className={`size-4 ${u.is_active ? "text-md-error" : "text-md-primary"}`} />
+                    </Button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -138,8 +194,8 @@ export default function AdminUsers() {
       </div>
 
       <p className="md-label-medium mt-4 text-md-on-surface-variant">
-        Accounts are created in the Django admin at <code>/admin/auth/user/add/</code>,
-        where the Role field sets Collector or Administrator.
+        Deactivating keeps an account&rsquo;s captured agents intact — prefer it to deletion,
+        which is blocked for anyone who has captured records.
       </p>
     </DashboardShell>
   );
