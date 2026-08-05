@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Users, ClipboardList, RefreshCw, ShieldCheck, MapPin, Search } from "lucide-react";
+import { Users, ClipboardList, RefreshCw, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandLock } from "@/components/brand";
 import { CaptureIllustration } from "@/components/illustrations/capture-illustration";
 import { ProgressSummary } from "@/components/progress-summary";
 import { TarabaMap } from "@/components/taraba-map";
@@ -16,15 +17,7 @@ export default function Landing() {
       {/* ---------------- Header ---------------- */}
       <header className="sticky top-0 z-10 border-b border-md-surface-variant bg-md-surface/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-md-primary text-md-on-primary">
-              <ShieldCheck className="size-5" />
-            </div>
-            <div>
-              <p className="md-label-medium text-md-primary">APC TARABA</p>
-              <p className="md-title-medium">Agent Portal</p>
-            </div>
-          </div>
+          <BrandLock />
           <div className="flex items-center gap-2">
             <Button variant="text" size="sm" onClick={reload} disabled={loading}>
               <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} /> Refresh

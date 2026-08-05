@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  Search, ShieldCheck, User, X, ChevronLeft, ChevronRight, ImageIcon,
+  Search, User, X, ChevronLeft, ChevronRight, ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandLock } from "@/components/brand";
 import { api, type Lga, type Ward, type PollingUnit, type Agent } from "@/lib/api";
 
 const PAGE_SIZE = 50; // matches REST_FRAMEWORK PAGE_SIZE
@@ -80,15 +81,7 @@ export default function PublicAgents() {
       {/* ---------------- Public header ---------------- */}
       <header className="sticky top-0 z-10 border-b border-md-surface-variant bg-md-surface/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-md-primary text-md-on-primary">
-              <ShieldCheck className="size-5" />
-            </div>
-            <div>
-              <p className="md-label-medium text-md-primary">APC TARABA</p>
-              <p className="md-title-medium">Agent Portal</p>
-            </div>
-          </Link>
+          <Link href="/"><BrandLock /></Link>
           <Button variant="outlined" size="sm" asChild>
             <Link href="/">Dashboard</Link>
           </Button>

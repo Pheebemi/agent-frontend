@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { BrandMark } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
@@ -30,9 +31,7 @@ export default function Login() {
       {/* ---------------- Brand panel ---------------- */}
       <div className="relative hidden flex-col justify-between bg-md-primary p-12 text-white lg:flex">
         <div className="flex items-center gap-3">
-          <div className="flex size-11 items-center justify-center rounded-xl bg-white/15">
-            <ShieldCheck className="size-6" />
-          </div>
+          <BrandMark size="size-11" onPrimary />
           <span className="md-title-large font-medium">APC Taraba</span>
         </div>
 
@@ -61,9 +60,7 @@ export default function Login() {
       <div className="flex items-center justify-center bg-md-surface px-4 py-12 sm:px-8">
         <form onSubmit={submit} className="w-full max-w-sm">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-md-primary text-md-on-primary">
-              <ShieldCheck className="size-5" />
-            </div>
+            <BrandMark />
             <span className="md-title-medium">APC Taraba</span>
           </div>
 

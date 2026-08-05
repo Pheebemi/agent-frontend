@@ -4,9 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  ShieldCheck, LayoutDashboard, ClipboardList, Users, UserCog, Search, LogOut, Menu, X,
+  LayoutDashboard, ClipboardList, Users, UserCog, Search, LogOut, Menu, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandLock } from "@/components/brand";
 import { api } from "@/lib/api";
 import { useCurrentUser } from "@/lib/use-current-user";
 
@@ -41,14 +42,8 @@ export function DashboardShell({
 
   const nav = (
     <nav className="flex h-full flex-col gap-1 p-3">
-      <Link href="/" className="mb-4 flex items-center gap-3 px-3 py-2" onClick={() => setOpen(false)}>
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-md-primary text-md-on-primary">
-          <ShieldCheck className="size-5" />
-        </div>
-        <div>
-          <p className="md-label-medium text-md-primary">APC TARABA</p>
-          <p className="md-title-medium">Agent Portal</p>
-        </div>
+      <Link href="/" className="mb-4 block px-3 py-2" onClick={() => setOpen(false)}>
+        <BrandLock />
       </Link>
 
       {items.map(({ href, label, icon: Icon }) => {
