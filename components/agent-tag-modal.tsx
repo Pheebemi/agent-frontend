@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Printer, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AgentTag } from "@/components/agent-tag";
@@ -8,17 +9,21 @@ import { api, type Agent } from "@/lib/api";
 
 type LocationInfo = { lgaName: string; wardName: string; puName: string; puCode: string };
 
-/** CSS injected only while the tag is open, so it never touches printing elsewhere in the app. */
+const PRINT_PORTAL_ID = "agent-tag-print-portal";
+
+/**
+ * CSS injected only while the tag is open, so it never touches printing
+ * elsewhere in the app.
+ *
+ * `display: none` (not `visibility: hidden`) on every other top-level node —
+ * visibility keeps the hidden content's layout height, which pushed the
+ * printed tag onto a second page once the rest of the app's height exceeded
+ * one 140mm page. Hiding the print portal's siblings by display removes that
+ * height entirely, so the tag is the only thing in the print layout.
+ */
 const PRINT_STYLE = `
 @media print {
-  body * { visibility: hidden; }
-  #agent-print-tag, #agent-print-tag * { visibility: visible; }
-  #agent-print-tag {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-  }
+  body > *:not(#${PRINT_PORTAL_ID}) { display: none !important; }
   @page { size: 90mm 140mm; margin: 0; }
 }
 `;
@@ -110,6 +115,23 @@ export function AgentTagModal({ agent, onClose }: { agent: Agent | null; onClose
           </Button>
         </div>
       </div>
+
+      {/* Print-only copy, portaled straight to <body> so it sits outside the
+          modal's fixed/scrolling ancestors — those are what caused pagination
+          issues when printed in place. */}
+      {info &&
+        createPortal(
+          <div id={PRINT_PORTAL_ID} className="hidden print:block">
+            <AgentTag
+              agent={agent}
+              lgaName={info.lgaName}
+              wardName={info.wardName}
+              puName={info.puName}
+              puCode={info.puCode}
+            />
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
