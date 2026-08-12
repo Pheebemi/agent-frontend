@@ -50,7 +50,7 @@ export function AgentTag({
 
         {/* Photo + identity */}
         <div className="flex flex-col items-center px-4 pt-4">
-          <div className="-mt-11 size-24 shrink-0 overflow-hidden rounded-full border-4 border-white bg-md-surface-variant shadow ring-1 ring-md-outline-variant">
+          <div className="-mt-4 size-24 shrink-0 overflow-hidden rounded-full border-4 border-white bg-md-surface-variant shadow ring-1 ring-md-outline-variant">
             {agent.passport_photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={agent.passport_photo_url} alt="" className="size-full object-cover" />
