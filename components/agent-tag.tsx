@@ -24,7 +24,6 @@ export function AgentTag({
 }) {
   return (
     <div
-      id="agent-print-tag"
       style={{
         width: "90mm",
         height: "140mm",
