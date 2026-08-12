@@ -72,7 +72,9 @@ class ApiClient {
   }
 
   lgas() { return this.req<Lga[]>("/lgas/"); }
+  lga(id: number) { return this.req<Lga>(`/lgas/${id}/`); }
   wards(lgaId: number) { return this.req<Ward[]>(`/wards/?lga=${lgaId}`); }
+  ward(id: number) { return this.req<Ward>(`/wards/${id}/`); }
   pollingUnits(wardId: number) { return this.req<PollingUnit[]>(`/polling-units/?ward=${wardId}`); }
   pollingUnit(id: number) { return this.req<PollingUnit>(`/polling-units/${id}/`); }
   agentsForPu(puId: number) {

@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  Search, User, X, ChevronLeft, ChevronRight, ImageIcon,
+  Search, User, X, ChevronLeft, ChevronRight, ImageIcon, Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLock } from "@/components/brand";
+import { AgentTagModal } from "@/components/agent-tag-modal";
 import { api, type Lga, type Ward, type PollingUnit, type Agent } from "@/lib/api";
 
 const PAGE_SIZE = 50; // matches REST_FRAMEWORK PAGE_SIZE
@@ -29,6 +30,7 @@ export default function PublicAgents() {
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tagAgent, setTagAgent] = useState<Agent | null>(null);
 
   useEffect(() => { api.lgas().then(setLgas).catch(() => {}); }, []);
 
@@ -215,9 +217,19 @@ export default function PublicAgents() {
                     {a.polling_unit_code}
                   </p>
                 </div>
-                <span className="md-label-medium shrink-0 self-start rounded bg-md-surface-variant px-2 py-1 text-md-on-surface-variant">
-                  {a.source === "scan" ? "Scan" : "Manual"}
-                </span>
+                <div className="flex shrink-0 flex-col items-end gap-2 self-start">
+                  <span className="md-label-medium rounded bg-md-surface-variant px-2 py-1 text-md-on-surface-variant">
+                    {a.source === "scan" ? "Scan" : "Manual"}
+                  </span>
+                  <Button
+                    variant="text"
+                    size="icon-sm"
+                    onClick={() => setTagAgent(a)}
+                    aria-label={`Print tag for ${a.full_name}`}
+                  >
+                    <Printer className="size-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -248,6 +260,8 @@ export default function PublicAgents() {
           </div>
         )}
       </div>
+
+      <AgentTagModal agent={tagAgent} onClose={() => setTagAgent(null)} />
     </div>
   );
 }
